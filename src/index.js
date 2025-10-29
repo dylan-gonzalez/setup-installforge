@@ -30,6 +30,7 @@ async function run() {
     }
 
     // Download InstallForge
+    // Official InstallForge download URL - this is the primary download location from installforge.net
     const downloadUrl = 'https://installforge.net/download/InstallForge.exe';
     core.info(`Downloading InstallForge from ${downloadUrl}`);
     
@@ -37,7 +38,7 @@ async function run() {
     core.info(`Downloaded to ${downloadPath}`);
 
     // Create installation directory
-    const installDir = path.join(process.env.RUNNER_TOOL_CACHE || process.env.RUNNER_TEMP, 'installforge');
+    const installDir = path.join(getToolCacheDirectory(), 'installforge');
     if (!fs.existsSync(installDir)) {
       fs.mkdirSync(installDir, { recursive: true });
     }
@@ -63,6 +64,15 @@ async function run() {
   }
 }
 
+/**
+ * Gets the appropriate directory for tool cache installation
+ * Prefers RUNNER_TOOL_CACHE, falls back to RUNNER_TEMP
+ * @returns {string} The directory path for tool installation
+ */
+function getToolCacheDirectory() {
+  return process.env.RUNNER_TOOL_CACHE || process.env.RUNNER_TEMP || path.join(process.cwd(), 'tool-cache');
+}
+
 function setupEnvironment(installForgePath, version) {
   // Add InstallForge to PATH
   core.addPath(installForgePath);
@@ -79,4 +89,4 @@ if (require.main === module) {
   run();
 }
 
-module.exports = { run };
+module.exports = { run, getToolCacheDirectory };
