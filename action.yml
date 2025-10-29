@@ -1,0 +1,23 @@
+name: 'Setup InstallForge'
+description: 'Downloads and sets up InstallForge, a free Windows installer creation tool'
+author: 'dylan-gonzalez'
+
+inputs:
+  version:
+    description: 'Version of InstallForge to install (default: latest)'
+    required: false
+    default: 'latest'
+  cache:
+    description: 'Enable caching to speed up subsequent runs'
+    required: false
+    default: 'true'
+
+outputs:
+  installforge-version:
+    description: 'The version of InstallForge that was installed'
+  installforge-path:
+    description: 'Path where InstallForge was installed'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
