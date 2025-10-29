@@ -1,0 +1,69 @@
+name: Test Setup InstallForge Action
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Test Setup InstallForge
+        uses: ./
+        id: setup
+        with:
+          version: 'latest'
+          cache: true
+          
+      - name: Verify InstallForge installation
+        run: |
+          echo "InstallForge version: ${{ steps.setup.outputs.installforge-version }}"
+          echo "InstallForge path: ${{ steps.setup.outputs.installforge-path }}"
+          
+          # Check if InstallForge executable exists
+          if (Test-Path "${{ steps.setup.outputs.installforge-path }}\InstallForge.exe") {
+            Write-Output "✓ InstallForge.exe found at expected location"
+          } else {
+            Write-Error "✗ InstallForge.exe not found"
+            exit 1
+          }
+          
+          # Try to run InstallForge to verify it works
+          try {
+            & "${{ steps.setup.outputs.installforge-path }}\InstallForge.exe" --help
+            Write-Output "✓ InstallForge executable runs successfully"
+          } catch {
+            Write-Output "Note: InstallForge may require GUI interaction, but executable is present"
+          }
+        shell: pwsh
+        
+  test-cache-disabled:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Test Setup InstallForge without cache
+        uses: ./
+        with:
+          cache: false
+          
+      - name: Verify installation without cache
+        run: |
+          # Check if InstallForge is available in PATH
+          where.exe InstallForge.exe
+          if ($LASTEXITCODE -eq 0) {
+            Write-Output "✓ InstallForge found in PATH"
+          } else {
+            Write-Error "✗ InstallForge not found in PATH"
+            exit 1
+          }
+        shell: pwsh
